@@ -951,7 +951,7 @@ convert_0565_to_0565 (uint16_t s)
      PIXMAN_FORMAT_B (f) > 8 ||						\
      PIXMAN_FORMAT_TYPE (f) == PIXMAN_TYPE_ARGB_SRGB)
 
-#ifdef WORDS_BIGENDIAN
+#ifdef MSB_FIRST
 #   define SCREEN_SHIFT_LEFT(x,n)	((x) << (n))
 #   define SCREEN_SHIFT_RIGHT(x,n)	((x) >> (n))
 #else

@@ -48,7 +48,7 @@
 
 /* Fetch macros */
 
-#ifdef WORDS_BIGENDIAN
+#ifdef MSB_FIRST
 #define FETCH_1(img,l,o)						\
     (((READ ((img), ((uint32_t *)(l)) + ((o) >> 5))) >> (0x1f - ((o) & 0x1f))) & 0x1)
 #else
@@ -58,7 +58,7 @@
 
 #define FETCH_8(img,l,o)    (READ (img, (((uint8_t *)(l)) + ((o) >> 3))))
 
-#ifdef WORDS_BIGENDIAN
+#ifdef MSB_FIRST
 #define FETCH_4(img,l,o)						\
     (((4 * (o)) & 4) ? (FETCH_8 (img,l, 4 * (o)) & 0xf) : (FETCH_8 (img,l,(4 * (o))) >> 4))
 #else
@@ -66,7 +66,7 @@
     (((4 * (o)) & 4) ? (FETCH_8 (img, l, 4 * (o)) >> 4) : (FETCH_8 (img, l, (4 * (o))) & 0xf))
 #endif
 
-#ifdef WORDS_BIGENDIAN
+#ifdef MSB_FIRST
 #define FETCH_24(img,l,o)                                              \
     ((READ (img, (((uint8_t *)(l)) + ((o) * 3) + 0)) << 16)    |       \
      (READ (img, (((uint8_t *)(l)) + ((o) * 3) + 1)) << 8)     |       \
@@ -80,7 +80,7 @@
 
 /* Store macros */
 
-#ifdef WORDS_BIGENDIAN
+#ifdef MSB_FIRST
 #define STORE_1(img,l,o,v)						\
     do									\
     {									\
@@ -110,7 +110,7 @@
 
 #define STORE_8(img,l,o,v)  (WRITE (img, (uint8_t *)(l) + ((o) >> 3), (v)))
 
-#ifdef WORDS_BIGENDIAN
+#ifdef MSB_FIRST
 #define STORE_4(img,l,o,v)						\
     do									\
     {									\
@@ -136,7 +136,7 @@
     } while (0)
 #endif
 
-#ifdef WORDS_BIGENDIAN
+#ifdef MSB_FIRST
 #define STORE_24(img,l,o,v)                                            \
     do                                                                 \
     {                                                                  \

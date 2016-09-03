@@ -7,11 +7,6 @@
 /* Version number of package */
 #define VERSION "1.0.9"
 
-/* Define to 1 if your processor stores words with the most significant byte
-   first (like Motorola and SPARC, unlike Intel and VAX). */
-#undef WORDS_BIGENDIAN
-
-
 #define SF3_SUPPORT 1
 #define WITH_FLOAT 1
 

@@ -1799,7 +1799,7 @@ fluid_sample_import_sfont(fluid_sample_t* sample, SFSample* sfsample, fluid_defs
    equivalent to the matching ID list in memory regardless of LE/BE machine
 */
 
-#ifdef WORDS_BIGENDIAN
+#ifdef MSB_FIRST
 #define READCHUNK(var,fd)	G_STMT_START {		\
 	if (!safe_fread(var, 8, fd))			\
 	return(FAIL);					\
@@ -1821,7 +1821,8 @@ fluid_sample_import_sfont(fluid_sample_t* sample, SFSample* sfsample, fluid_defs
 	return(FAIL);					\
     (*var)[20] = '\0';					\
 } G_STMT_END
-#ifdef WORDS_BIGENDIAN
+
+#ifdef MSB_FIRST
 #define READD(var,fd)		G_STMT_START {		\
 	unsigned int _temp;					\
 	if (!safe_fread(&_temp, 4, fd))			\
@@ -1836,7 +1837,8 @@ fluid_sample_import_sfont(fluid_sample_t* sample, SFSample* sfsample, fluid_defs
     var = GINT32_FROM_LE(_temp);			\
 } G_STMT_END
 #endif
-#ifdef WORDS_BIGENDIAN
+
+#ifdef MSB_FIRST
 	#define READW(var,fd)		G_STMT_START {		\
 	unsigned short _temp;					\
 	if (!safe_fread(&_temp, 2, fd))			\

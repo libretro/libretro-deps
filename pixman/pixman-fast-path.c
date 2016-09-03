@@ -37,7 +37,7 @@ fetch_24 (uint8_t *a)
 {
     if (((uintptr_t)a) & 1)
     {
-#ifdef WORDS_BIGENDIAN
+#ifdef MSB_FIRST
 	return (*a << 16) | (*(uint16_t *)(a + 1));
 #else
 	return *a | (*(uint16_t *)(a + 1) << 8);
@@ -45,7 +45,7 @@ fetch_24 (uint8_t *a)
     }
     else
     {
-#ifdef WORDS_BIGENDIAN
+#ifdef MSB_FIRST
 	return (*(uint16_t *)a << 8) | *(a + 2);
 #else
 	return *(uint16_t *)a | (*(a + 2) << 16);
@@ -59,7 +59,7 @@ store_24 (uint8_t *a,
 {
     if (((uintptr_t)a) & 1)
     {
-#ifdef WORDS_BIGENDIAN
+#ifdef MSB_FIRST
 	*a = (uint8_t) (v >> 16);
 	*(uint16_t *)(a + 1) = (uint16_t) (v);
 #else
@@ -69,7 +69,7 @@ store_24 (uint8_t *a,
     }
     else
     {
-#ifdef WORDS_BIGENDIAN
+#ifdef MSB_FIRST
 	*(uint16_t *)a = (uint16_t)(v >> 8);
 	*(a + 2) = (uint8_t)v;
 #else
@@ -904,7 +904,7 @@ fast_composite_add_n_8_8 (pixman_implementation_t *imp,
     }
 }
 
-#ifdef WORDS_BIGENDIAN
+#ifdef MSB_FIRST
 #define CREATE_BITMASK(n) (0x80000000 >> (n))
 #define UPDATE_BITMASK(n) ((n) >> 1)
 #else
@@ -1974,7 +1974,7 @@ static const pixman_fast_path_t c_fast_paths[] =
     {   PIXMAN_OP_NONE	},
 };
 
-#ifdef WORDS_BIGENDIAN
+#ifdef MSB_FIRST
 #define A1_FILL_MASK(n, offs) (((1U << (n)) - 1) << (32 - (offs) - (n)))
 #else
 #define A1_FILL_MASK(n, offs) (((1U << (n)) - 1) << (offs))
@@ -2192,7 +2192,7 @@ fast_fetch_r5g6b5 (pixman_iter_t *iter, const uint32_t *mask)
 	     (sb & 0xFF) | 0xFF000000;
 	t1 = (sr & 0x00FF0000) | ((sg >> 8) & 0x0000FF00) |
 	     (sb >> 16) | 0xFF000000;
-#ifdef WORDS_BIGENDIAN
+#ifdef MSB_FIRST
 	*dst++ = t1;
 	*dst++ = t0;
 #else
