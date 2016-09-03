@@ -219,53 +219,6 @@ static const FLAC__uint32 log2_lookup[][LOG2_LOOKUP_PRECISION] = {
 	}
 };
 
-#if 0
-static const FLAC__uint64 log2_lookup_wide[] = {
-	{
-		/*
-		 * 32 fraction bits
-		 */
-		/* undefined */ 0x00000000,
-		/* lg(2/1) = */ FLAC__U64L(0x100000000),
-		/* lg(4/3) = */ FLAC__U64L(0x6a3fe5c6),
-		/* lg(8/7) = */ FLAC__U64L(0x31513015),
-		/* lg(16/15) = */ FLAC__U64L(0x17d60497),
-		/* lg(32/31) = */ FLAC__U64L(0x0bb9ca65),
-		/* lg(64/63) = */ FLAC__U64L(0x05d0fba2),
-		/* lg(128/127) = */ FLAC__U64L(0x02e58f74),
-		/* lg(256/255) = */ FLAC__U64L(0x01720d9c),
-		/* lg(512/511) = */ FLAC__U64L(0x00b8d875),
-		/* lg(1024/1023) = */ FLAC__U64L(0x005c60aa),
-		/* lg(2048/2047) = */ FLAC__U64L(0x002e2d72),
-		/* lg(4096/4095) = */ FLAC__U64L(0x00171600),
-		/* lg(8192/8191) = */ FLAC__U64L(0x000b8ad2),
-		/* lg(16384/16383) = */ FLAC__U64L(0x0005c55d),
-		/* lg(32768/32767) = */ FLAC__U64L(0x0002e2ac)
-	},
-	{
-		/*
-		 * 48 fraction bits
-		 */
-		/* undefined */ 0x00000000,
-		/* lg(2/1) = */ FLAC__U64L(0x1000000000000),
-		/* lg(4/3) = */ FLAC__U64L(0x6a3fe5c60429),
-		/* lg(8/7) = */ FLAC__U64L(0x315130157f7a),
-		/* lg(16/15) = */ FLAC__U64L(0x17d60496cfbb),
-		/* lg(32/31) = */ FLAC__U64L(0xbb9ca64ecac),
-		/* lg(64/63) = */ FLAC__U64L(0x5d0fba187cd),
-		/* lg(128/127) = */ FLAC__U64L(0x2e58f7441ee),
-		/* lg(256/255) = */ FLAC__U64L(0x1720d9c06a8),
-		/* lg(512/511) = */ FLAC__U64L(0xb8d8752173),
-		/* lg(1024/1023) = */ FLAC__U64L(0x5c60aa252e),
-		/* lg(2048/2047) = */ FLAC__U64L(0x2e2d71b0d8),
-		/* lg(4096/4095) = */ FLAC__U64L(0x1716001719),
-		/* lg(8192/8191) = */ FLAC__U64L(0xb8ad1de1b),
-		/* lg(16384/16383) = */ FLAC__U64L(0x5c55d640d),
-		/* lg(32768/32767) = */ FLAC__U64L(0x2e2abcf52)
-	}
-};
-#endif
-
 FLAC__uint32 FLAC__fixedpoint_log2(FLAC__uint32 x, unsigned fracbits, unsigned precision)
 {
 	const FLAC__uint32 ONE = (1u << fracbits);

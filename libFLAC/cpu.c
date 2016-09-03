@@ -451,7 +451,7 @@ void FLAC__cpu_info(FLAC__CPUInfo *info)
 	info->type = FLAC__CPUINFO_TYPE_PPC;
 # if !defined FLAC__NO_ASM
 	info->use_asm = true;
-#  ifdef FLAC__USE_ALTIVEC
+#if defined(__ALTIVEC__)
 #   if defined FLAC__SYS_DARWIN
 	{
 		int val = 0, mib[2] = { CTL_HW, HW_VECTORUNIT };
@@ -467,7 +467,7 @@ void FLAC__cpu_info(FLAC__CPUInfo *info)
 
 		info->ppc.ppc64 = (hostInfo.cpu_type == CPU_TYPE_POWERPC) && (hostInfo.cpu_subtype == CPU_SUBTYPE_POWERPC_970);
 	}
-#   else /* FLAC__USE_ALTIVEC && !FLAC__SYS_DARWIN */
+#   else
 	{
 		/* no Darwin, do it the brute-force way */
 		/* @@@@@@ this is not thread-safe; replace with SSE OS method above or remove */
@@ -501,7 +501,7 @@ void FLAC__cpu_info(FLAC__CPUInfo *info)
 		signal (SIGILL, SIG_DFL); /*@@@@@@ should save and restore old signal */
 	}
 #   endif
-#  else /* !FLAC__USE_ALTIVEC */
+#  else
 	info->ppc.altivec = 0;
 	info->ppc.ppc64 = 0;
 #  endif
