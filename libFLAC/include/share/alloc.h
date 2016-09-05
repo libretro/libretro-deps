@@ -48,7 +48,9 @@
 #include <stdlib.h> /* for size_t, malloc(), etc */
 #include "share/compat.h"
 
+#ifndef SIZE_T_MAX
 #define SIZE_T_MAX   ((size_t) (-1))
+#endif
 
 #ifndef SIZE_MAX
 # ifndef SIZE_T_MAX
