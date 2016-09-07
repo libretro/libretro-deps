@@ -144,6 +144,9 @@ blocktype_d[2]        block type to use for previous granule
 # include <config.h>
 #endif
 
+#include <stdlib.h>
+#include <string.h>
+
 #include "lame.h"
 #include "machine.h"
 #include "encoder.h"
