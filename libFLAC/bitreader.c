@@ -44,6 +44,8 @@
 #include "share/compat.h"
 #include "share/endswap.h"
 
+#include <retro_miscellaneous.h>
+
 /* Things should be fastest when this matches the machine word size */
 /* WATCHOUT: if you change this you must also change the following #defines down to FLAC__clz_uint32 below to match */
 /* WATCHOUT: there are a few places where the code will not work unless uint32_t is >= 32 bits wide */
@@ -202,7 +204,7 @@ FLAC__bool bitreader_read_from_client_(FLAC__BitReader *br)
 
 FLAC__BitReader *FLAC__bitreader_new(void)
 {
-	FLAC__BitReader *br = calloc(1, sizeof(FLAC__BitReader));
+	FLAC__BitReader *br = (FLAC__BitReader*)calloc(1, sizeof(FLAC__BitReader));
 
 	/* calloc() implies:
 		memset(br, 0, sizeof(FLAC__BitReader));
@@ -237,7 +239,7 @@ FLAC__bool FLAC__bitreader_init(FLAC__BitReader *br, FLAC__CPUInfo cpu, FLAC__Bi
 	br->words = br->bytes = 0;
 	br->consumed_words = br->consumed_bits = 0;
 	br->capacity = FLAC__BITREADER_DEFAULT_CAPACITY;
-	br->buffer = malloc(sizeof(uint32_t) * br->capacity);
+	br->buffer = (uint32_t*)malloc(sizeof(uint32_t) * br->capacity);
 	if(br->buffer == 0)
 		return false;
 	br->read_callback = rcb;
@@ -490,7 +492,7 @@ FLAC__bool FLAC__bitreader_skip_bits_no_crc(FLAC__BitReader *br, unsigned bits)
 		FLAC__uint32 x;
 
 		if(n != 0) {
-			m = flac_min(8-n, bits);
+			m = MIN(8-n, bits);
 			if(!FLAC__bitreader_read_raw_uint32(br, &x, m))
 				return false;
 			bits -= m;
