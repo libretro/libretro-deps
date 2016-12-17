@@ -23,5 +23,6 @@
 # define LIBMAD_GLOBAL_H
 
 /* conditional features */
+#include <retro_inline.h>
 
 # endif
