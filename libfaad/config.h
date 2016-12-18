@@ -31,7 +31,7 @@
 #undef HAVE_LIMITS_H
 
 /* Define if you have C99's lrintf function. */
-#undef HAVE_LRINTF
+#define HAVE_LRINTF 1
 
 /* Define to 1 if you have the <mathf.h> header file. */
 #undef HAVE_MATHF_H
