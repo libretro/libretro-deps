@@ -461,24 +461,6 @@ static FLAC__bool simple_iterator_prime_input_(FLAC__Metadata_SimpleIterator *it
 	}
 }
 
-#if 0
-@@@ If we decide to finish implementing this, put this comment back in metadata.h
-/*
- * The 'tempfile_path_prefix' allows you to specify a directory where
- * tempfiles should go.  Remember that if your metadata edits cause the
- * FLAC file to grow, the entire file will have to be rewritten.  If
- * 'tempfile_path_prefix' is NULL, the temp file will be written in the
- * same directory as the original FLAC file.  This makes replacing the
- * original with the tempfile fast but requires extra space in the same
- * partition for the tempfile.  If space is a problem, you can pass a
- * directory name belonging to a different partition in
- * 'tempfile_path_prefix'.  Note that you should use the forward slash
- * '/' as the directory separator.  A trailing slash is not needed; it
- * will be added automatically.
- */
-FLAC__bool FLAC__metadata_simple_iterator_init(FLAC__Metadata_SimpleIterator *iterator, const char *filename, FLAC__bool preserve_file_stats, const char *tempfile_path_prefix);
-#endif
-
 FLAC_API FLAC__bool FLAC__metadata_simple_iterator_init(FLAC__Metadata_SimpleIterator *iterator, const char *filename, FLAC__bool read_only, FLAC__bool preserve_file_stats)
 {
 	const char *tempfile_path_prefix = 0; /*@@@ search for comments near 'flac_rename(...)' for what it will take to finish implementing this */
