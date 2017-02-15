@@ -62,13 +62,11 @@ endif
 APIVERSION = 16
 
 SRCS = igd_desc_parse.c miniupnpc.c minixml.c minisoap.c miniwget.c \
-       upnpc.c upnpcommands.c upnpreplyparse.c testminixml.c \
-       minixmlvalid.c testupnpreplyparse.c minissdpc.c \
-       upnperrors.c testigddescparse.c testminiwget.c \
+       upnpc.c upnpcommands.c upnpreplyparse.c \
+       minixmlvalid.c minissdpc.c \
+       upnperrors.c \
        connecthostport.c portlistingparse.c receivedata.c \
-       upnpdev.c testportlistingparse.c miniupnpcmodule.c \
-       minihttptestserver.c \
-       listdevices.c
+       upnpdev.c miniupnpcmodule.c
 
 LIBOBJS = miniwget.o minixml.o igd_desc_parse.o minisoap.o \
           miniupnpc.o upnpreplyparse.o upnpcommands.o upnperrors.o \
@@ -106,27 +104,10 @@ else
 endif
 endif
 
-EXECUTABLES = upnpc-static listdevices
-EXECUTABLES_ADDTESTS = testminixml minixmlvalid testupnpreplyparse \
-			  testigddescparse testminiwget testportlistingparse
-
-TESTMINIXMLOBJS = minixml.o igd_desc_parse.o testminixml.o
-
-TESTMINIWGETOBJS = miniwget.o testminiwget.o connecthostport.o receivedata.o
-
-TESTUPNPREPLYPARSE = testupnpreplyparse.o minixml.o upnpreplyparse.o
-
-TESTPORTLISTINGPARSE = testportlistingparse.o minixml.o portlistingparse.o
-
-TESTIGDDESCPARSE = testigddescparse.o igd_desc_parse.o minixml.o \
-                   miniupnpc.o miniwget.o upnpcommands.o upnpreplyparse.o \
-                   minisoap.o connecthostport.o receivedata.o \
-                   portlistingparse.o
+EXECUTABLES = upnpc-static
 
 ifneq ($(OS), AmigaOS)
 EXECUTABLES := $(EXECUTABLES) upnpc-shared
-TESTMINIWGETOBJS := $(TESTMINIWGETOBJS) minissdpc.o
-TESTIGDDESCPARSE := $(TESTIGDDESCPARSE) minissdpc.o
 endif
 
 LIBDIR ?= lib
@@ -158,7 +139,7 @@ test:	check
 check:	validateminixml validateminiwget validateupnpreplyparse \
 	validateportlistingparse validateigddescparse
 
-everything:	all $(EXECUTABLES_ADDTESTS)
+everything:	all
 
 pythonmodule:	$(LIBRARY) miniupnpcmodule.c setup.py
 	python setup.py build
@@ -202,7 +183,6 @@ validateigddescparse:	testigddescparse
 
 clean:
 	$(RM) $(LIBRARY) $(SHAREDLIBRARY) $(EXECUTABLES) $(OBJS) miniupnpcstrings.h
-	$(RM) $(EXECUTABLES_ADDTESTS)
 
 distclean: clean
 
@@ -271,19 +251,7 @@ upnpc-static:	upnpc.o $(LIBRARY)
 upnpc-shared:	upnpc.o $(SHAREDLIBRARY)
 	$(CC) $(LDFLAGS) -o $@ $^ $(LOADLIBES) $(LDLIBS)
 
-listdevices:	listdevices.o $(LIBRARY)
-
-testminixml:	$(TESTMINIXMLOBJS)
-
-testminiwget:	$(TESTMINIWGETOBJS)
-
 minixmlvalid:	minixml.o minixmlvalid.o
-
-testupnpreplyparse:	$(TESTUPNPREPLYPARSE)
-
-testigddescparse:	$(TESTIGDDESCPARSE)
-
-testportlistingparse:	$(TESTPORTLISTINGPARSE)
 
 miniupnpcstrings.h:	miniupnpcstrings.h.in updateminiupnpcstrings.sh VERSION
 	$(SH) updateminiupnpcstrings.sh
@@ -301,8 +269,6 @@ ideb:
 
 /usr/share/doc/python-all-dev:
 	(sudo apt-get install python-all-dev)
-
-minihttptestserver:	minihttptestserver.o
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
@@ -322,25 +288,18 @@ upnpcommands.o: upnpcommands.h upnpreplyparse.h portlistingparse.h
 upnpcommands.o: miniupnpc_declspec.h miniupnpctypes.h miniupnpc.h
 upnpcommands.o: igd_desc_parse.h upnpdev.h
 upnpreplyparse.o: upnpreplyparse.h minixml.h
-testminixml.o: minixml.h igd_desc_parse.h
 minixmlvalid.o: minixml.h
-testupnpreplyparse.o: upnpreplyparse.h
 minissdpc.o: minissdpc.h miniupnpc_declspec.h upnpdev.h miniupnpc.h
 minissdpc.o: igd_desc_parse.h receivedata.h codelength.h
 upnperrors.o: upnperrors.h miniupnpc_declspec.h upnpcommands.h
 upnperrors.o: upnpreplyparse.h portlistingparse.h miniupnpctypes.h
 upnperrors.o: miniupnpc.h igd_desc_parse.h upnpdev.h
-testigddescparse.o: igd_desc_parse.h minixml.h miniupnpc.h
-testigddescparse.o: miniupnpc_declspec.h upnpdev.h
-testminiwget.o: miniwget.h miniupnpc_declspec.h
 connecthostport.o: connecthostport.h
 portlistingparse.o: portlistingparse.h miniupnpc_declspec.h miniupnpctypes.h
 portlistingparse.o: minixml.h
 receivedata.o: receivedata.h
 upnpdev.o: upnpdev.h miniupnpc_declspec.h
-testportlistingparse.o: portlistingparse.h miniupnpc_declspec.h
 testportlistingparse.o: miniupnpctypes.h
 miniupnpcmodule.o: miniupnpc.h miniupnpc_declspec.h igd_desc_parse.h
 miniupnpcmodule.o: upnpdev.h upnpcommands.h upnpreplyparse.h
 miniupnpcmodule.o: portlistingparse.h miniupnpctypes.h upnperrors.h
-listdevices.o: miniupnpc.h miniupnpc_declspec.h igd_desc_parse.h upnpdev.h
