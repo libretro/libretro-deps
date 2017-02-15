@@ -62,7 +62,7 @@ endif
 APIVERSION = 16
 
 SRCS = igd_desc_parse.c miniupnpc.c minixml.c minisoap.c miniwget.c \
-       upnpc.c upnpcommands.c upnpreplyparse.c \
+       upnpcommands.c upnpreplyparse.c \
        minixmlvalid.c minissdpc.c \
        upnperrors.c \
        connecthostport.c portlistingparse.c receivedata.c \
@@ -129,7 +129,7 @@ endif
 
 
 .PHONY:	install clean depend all check test everything \
-	installpythonmodule updateversion
+	updateversion
 #	validateminixml validateminiwget
 
 all:	$(LIBRARY) $(EXECUTABLES)
@@ -140,20 +140,6 @@ check:	validateminixml validateminiwget validateupnpreplyparse \
 	validateportlistingparse validateigddescparse
 
 everything:	all
-
-pythonmodule:	$(LIBRARY) miniupnpcmodule.c setup.py
-	python setup.py build
-	touch $@
-
-installpythonmodule:	pythonmodule
-	python setup.py install
-
-pythonmodule3:	$(LIBRARY) miniupnpcmodule.c setup.py
-	python3 setup.py build
-	touch $@
-
-installpythonmodule3:	pythonmodule3
-	python3 setup.py install
 
 validateminixml:	minixmlvalid
 	@echo "minixml validation test"
@@ -245,30 +231,16 @@ else
 	$(CC) -shared $(LDFLAGS) -Wl,-soname,$(SONAME) -o $@ $^
 endif
 
-upnpc-static:	upnpc.o $(LIBRARY)
+upnpc-static:	$(LIBRARY)
 	$(CC) $(LDFLAGS) -o $@ $^ $(LOADLIBES) $(LDLIBS)
 
-upnpc-shared:	upnpc.o $(SHAREDLIBRARY)
+upnpc-shared:	$(SHAREDLIBRARY)
 	$(CC) $(LDFLAGS) -o $@ $^ $(LOADLIBES) $(LDLIBS)
 
 minixmlvalid:	minixml.o minixmlvalid.o
 
 miniupnpcstrings.h:	miniupnpcstrings.h.in updateminiupnpcstrings.sh VERSION
 	$(SH) updateminiupnpcstrings.sh
-
-# make .deb packages
-deb: /usr/share/pyshared/stdeb all
-	(python setup.py --command-packages=stdeb.command bdist_deb)
-
-# install .deb packages
-ideb:
-	(sudo dpkg -i deb_dist/*.deb)
-
-/usr/share/pyshared/stdeb: /usr/share/doc/python-all-dev
-	(sudo apt-get install python-stdeb)
-
-/usr/share/doc/python-all-dev:
-	(sudo apt-get install python-all-dev)
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
 
@@ -281,9 +253,6 @@ minixml.o: minixml.h
 minisoap.o: minisoap.h miniupnpcstrings.h
 miniwget.o: miniupnpcstrings.h miniwget.h miniupnpc_declspec.h
 miniwget.o: connecthostport.h receivedata.h
-upnpc.o: miniwget.h miniupnpc_declspec.h miniupnpc.h igd_desc_parse.h
-upnpc.o: upnpdev.h upnpcommands.h upnpreplyparse.h portlistingparse.h
-upnpc.o: miniupnpctypes.h upnperrors.h miniupnpcstrings.h
 upnpcommands.o: upnpcommands.h upnpreplyparse.h portlistingparse.h
 upnpcommands.o: miniupnpc_declspec.h miniupnpctypes.h miniupnpc.h
 upnpcommands.o: igd_desc_parse.h upnpdev.h
