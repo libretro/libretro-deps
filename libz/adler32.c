@@ -46,7 +46,7 @@
 #endif
 
 /* ========================================================================= */
-uLong adler32(uLong adler, const Bytef *buf, uInt len)
+uint32_t adler32(uint32_t adler, const uint8_t *buf, size_t len)
 {
    uint32_t s1 = adler & 0xffff;
    uint32_t s2 = (adler >> 16) & 0xffff;
@@ -72,4 +72,3 @@ uLong adler32(uLong adler, const Bytef *buf, uInt len)
    }
    return (s2 << 16) | s1;
 }
-
