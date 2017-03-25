@@ -13,7 +13,7 @@ local int gz_decomp OF((gz_statep));
 local int gz_fetch OF((gz_statep));
 local int gz_skip OF((gz_statep, z_off64_t));
 
-int ZEXPORT gzgetc_(gzFile file);
+int gzgetc_(gzFile file);
 
 /* Use read() to load a buffer -- return -1 on error, otherwise 0.  Read from
    state->fd, and update state->eof, state->err, and state->msg as appropriate.
@@ -276,7 +276,7 @@ local int gz_skip(gz_statep state, z_off64_t len)
    return 0;
 }
 
-int ZEXPORT gzread(gzFile file, voidp buf, unsigned len)
+int gzread(gzFile file, voidp buf, unsigned len)
 {
    unsigned got, n;
    gz_statep state;
@@ -372,7 +372,7 @@ int ZEXPORT gzread(gzFile file, voidp buf, unsigned len)
 #else
 #  undef gzgetc
 #endif
-int ZEXPORT gzgetc(gzFile file)
+int gzgetc(gzFile file)
 {
    int ret;
    unsigned char buf[1];
@@ -400,12 +400,12 @@ int ZEXPORT gzgetc(gzFile file)
    return ret < 1 ? -1 : buf[0];
 }
 
-int ZEXPORT gzgetc_(gzFile file)
+int gzgetc_(gzFile file)
 {
    return gzgetc(file);
 }
 
-int ZEXPORT gzungetc(int c, gzFile file)
+int gzungetc(int c, gzFile file)
 {
    gz_statep state;
 
@@ -462,7 +462,7 @@ int ZEXPORT gzungetc(int c, gzFile file)
    return c;
 }
 
-char * ZEXPORT gzgets(gzFile file, char *buf, int len)
+char * gzgets(gzFile file, char *buf, int len)
 {
    unsigned left, n;
    char *str;
@@ -522,7 +522,7 @@ char * ZEXPORT gzgets(gzFile file, char *buf, int len)
    return str;
 }
 
-int ZEXPORT gzdirect(gzFile file)
+int gzdirect(gzFile file)
 {
    gz_statep state;
 

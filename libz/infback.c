@@ -25,7 +25,7 @@ local void fixedtables OF((struct inflate_state FAR *state));
    windowBits is in the range 8..15, and window is a user-supplied
    window and output buffer that is 2**windowBits bytes.
    */
-int ZEXPORT inflateBackInit_(z_streamp strm, int windowBits, unsigned char FAR *window, const char *version, int stream_size)
+int inflateBackInit_(z_streamp strm, int windowBits, unsigned char FAR *window, const char *version, int stream_size)
 {
    struct inflate_state FAR *state;
 
@@ -241,7 +241,7 @@ local void fixedtables(struct inflate_state FAR *state)
    inflateBack() can also return Z_STREAM_ERROR if the input parameters
    are not correct, i.e. strm is Z_NULL or the state was not initialized.
    */
-int ZEXPORT inflateBack(z_streamp strm, in_func in, void FAR *in_desc, out_func out, void FAR *out_desc)
+int inflateBack(z_streamp strm, in_func in, void FAR *in_desc, out_func out, void FAR *out_desc)
 {
    struct inflate_state FAR *state;
    z_const unsigned char FAR *next;    /* next input */
@@ -617,7 +617,7 @@ inf_leave:
    return ret;
 }
 
-int ZEXPORT inflateBackEnd(z_streamp strm)
+int inflateBackEnd(z_streamp strm)
 {
    if (strm == Z_NULL || strm->state == Z_NULL || strm->zfree == Z_NULL)
       return Z_STREAM_ERROR;
