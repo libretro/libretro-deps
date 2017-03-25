@@ -20,8 +20,8 @@ z_off_t gzoffset(gzFile file);
 int gzbuffer(gzFile file, unsigned size);
 
 /* Local functions */
-local void gz_reset OF((gz_statep));
-local gzFile gz_open OF((const void *, int, const char *));
+static void gz_reset OF((gz_statep));
+static gzFile gz_open OF((const void *, int, const char *));
 
 #if defined UNDER_CE
 
@@ -76,7 +76,7 @@ char ZLIB_INTERNAL *gz_strwinerror (error)
 #endif /* UNDER_CE */
 
 /* Reset gzip file state */
-local void gz_reset(gz_statep state)
+static void gz_reset(gz_statep state)
 {
    state->x.have = 0;              /* no output data available */
    if (state->mode == GZ_READ) {   /* for reading ... */
@@ -91,7 +91,7 @@ local void gz_reset(gz_statep state)
 }
 
 /* Open a gzip file either by name or file descriptor. */
-local gzFile gz_open(const void *path, int fd, const char *mode)
+static gzFile gz_open(const void *path, int fd, const char *mode)
 {
    gz_statep state;
    size_t len;

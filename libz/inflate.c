@@ -97,13 +97,13 @@
 
    /* function prototypes */
 int inflateReset2(z_streamp strm, int windowBits);
-   local void fixedtables OF((struct inflate_state FAR *state));
-   local int updatewindow OF((z_streamp strm, const unsigned char FAR *end,
+   static void fixedtables OF((struct inflate_state FAR *state));
+   static int updatewindow OF((z_streamp strm, const unsigned char FAR *end,
             unsigned copy));
 #ifdef BUILDFIXED
 void makefixed OF((void));
 #endif
-local unsigned syncsearch OF((unsigned FAR *have, const unsigned char FAR *buf,
+static unsigned syncsearch OF((unsigned FAR *have, const unsigned char FAR *buf,
          unsigned len));
 
 long inflateMark(z_streamp strm);
@@ -258,7 +258,7 @@ int inflatePrime(z_streamp strm, int bits, int value)
    used for threaded applications, since the rewriting of the tables and virgin
    may not be thread-safe.
    */
-local void fixedtables(struct inflate_state FAR *state)
+static void fixedtables(struct inflate_state FAR *state)
 {
 #ifdef BUILDFIXED
    static int virgin = 1;
@@ -375,7 +375,7 @@ void makefixed(void)
    output will fall in the output data, making match copies simpler and faster.
    The advantage may be dependent on the size of the processor's data caches.
    */
-local int updatewindow(z_streamp strm, const Bytef *end, unsigned copy)
+static int updatewindow(z_streamp strm, const Bytef *end, unsigned copy)
 {
    struct inflate_state FAR *state;
    unsigned dist;
@@ -1336,7 +1336,7 @@ int inflateGetHeader(z_streamp strm, gz_headerp head)
    called again with more data and the *have state.  *have is initialized to
    zero for the first call.
    */
-local unsigned syncsearch(unsigned FAR *have, const unsigned char FAR *buf, unsigned len)
+static unsigned syncsearch(unsigned FAR *have, const unsigned char FAR *buf, unsigned len)
 {
    unsigned got;
    unsigned next;
