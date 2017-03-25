@@ -97,14 +97,14 @@
 
    /* function prototypes */
 int inflateReset2(z_streamp strm, int windowBits);
-   static void fixedtables OF((struct inflate_state FAR *state));
-   static int updatewindow OF((z_streamp strm, const unsigned char FAR *end,
-            unsigned copy));
+   static void fixedtables (struct inflate_state FAR *state);
+   static int updatewindow (z_streamp strm, const unsigned char FAR *end,
+            unsigned copy);
 #ifdef BUILDFIXED
-void makefixed OF((void));
+void makefixed (void);
 #endif
-static unsigned syncsearch OF((unsigned FAR *have, const unsigned char FAR *buf,
-         unsigned len));
+static unsigned syncsearch (unsigned FAR *have, const unsigned char FAR *buf,
+         unsigned len);
 
 long inflateMark(z_streamp strm);
 
