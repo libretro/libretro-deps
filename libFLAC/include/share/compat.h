@@ -53,18 +53,21 @@
 #define fseeko _fseeki64
 #define ftello _ftelli64
 #else /* MinGW */
-#if !defined(HAVE_FSEEKO) && !defined(__MINGW32_)
+#if defined (__MINGW32__) && !defined (__MINGW64__)
+#ifndef _W64
 #define fseeko fseeko64
 #define ftello ftello64
+#endif
 #endif
 #endif
 #else
 #define FLAC__off_t off_t
 #endif
 
-#if HAVE_INTTYPES_H
-#define __STDC_FORMAT_MACROS
+#ifdef _MSC_VER
+#if _MSC_VER >= 1800
 #include <inttypes.h>
+#endif
 #endif
 
 #if defined(_MSC_VER)
