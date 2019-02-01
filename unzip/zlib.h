@@ -1256,7 +1256,7 @@ typedef voidp gzFile;       /* opaque gzip file descriptor */
    error.
 */
 
- int VA gzprintf (gzFile file, const char *format, ...);
+ int gzprintf (gzFile file, const char *format, ...);
 /*
      Converts, formats, and writes the arguments to the compressed file under
    control of the format string, as in fprintf.  gzprintf returns the number of
