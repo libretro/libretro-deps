@@ -107,8 +107,11 @@
 
 /* Define to 1 if your processor stores words with the most significant byte
    first (like Motorola and SPARC, unlike Intel and VAX). */
+#ifdef MSB_FIRST
+#define WORDS_BIGENDIAN 1
+#else
 #undef WORDS_BIGENDIAN
-
+#endif
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
 #ifndef __cplusplus

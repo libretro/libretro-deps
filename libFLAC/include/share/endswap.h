@@ -30,7 +30,20 @@
  */
 
 /* It is assumed that this header will be included after "config.h". */
-
+/* These changes are necessary because we don't use FLAC's build system. */
+#ifdef __GNUC__
+#define HAVE_BSWAP32 1
+#else
+#define HAVE_BSWAP32 0
+#endif
+#if ((__GNUC__ >= 4) && (__GNUC_MINOR__ >= 8)) || defined(__clang_major__)
+#define HAVE_BSWAP16 1
+#else
+#define HAVE_BSWAP16 0
+#endif
+#ifdef __linux__
+#define HAVE_BYTESWAP_H
+#endif
 #if HAVE_BSWAP32			/* GCC and Clang */
 
 #define	ENDSWAP_32(x)		(__builtin_bswap32 (x))
