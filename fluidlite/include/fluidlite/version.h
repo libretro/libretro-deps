@@ -8,8 +8,8 @@ extern "C" {
 
 #define FLUIDLITE_VERSION       "1.2.2"
 #define FLUIDLITE_VERSION_MAJOR 1
-#define FLUIDLITE_VERSION_MINOR 0
-#define FLUIDLITE_VERSION_MICRO 9
+#define FLUIDLITE_VERSION_MINOR 2
+#define FLUIDLITE_VERSION_MICRO 2
 
 
 FLUIDSYNTH_API void fluid_version(int *major, int *minor, int *micro);
