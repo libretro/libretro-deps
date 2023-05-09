@@ -36,7 +36,7 @@ struct _fluid_channel_t
   unsigned int prognum;
   fluid_preset_t* preset;
   fluid_synth_t* synth;
-  short key_pressure;
+  char key_pressure[128];
   short channel_pressure;
   short pitch_bend;
   short pitch_wheel_sensitivity;
@@ -77,7 +77,7 @@ struct _fluid_channel_t
 fluid_channel_t* new_fluid_channel(fluid_synth_t* synth, int num);
 int delete_fluid_channel(fluid_channel_t* chan);
 void fluid_channel_init(fluid_channel_t* chan);
-void fluid_channel_init_ctrl(fluid_channel_t* chan);
+void fluid_channel_init_ctrl(fluid_channel_t* chan, int is_all_ctrl_off);
 void fluid_channel_reset(fluid_channel_t* chan);
 int fluid_channel_set_preset(fluid_channel_t* chan, fluid_preset_t* preset);
 fluid_preset_t* fluid_channel_get_preset(fluid_channel_t* chan);
@@ -96,6 +96,10 @@ int fluid_channel_get_num(fluid_channel_t* chan);
 void fluid_channel_set_interp_method(fluid_channel_t* chan, int new_method);
 int fluid_channel_get_interp_method(fluid_channel_t* chan);
 
+#define fluid_channel_get_key_pressure(chan, key) \
+  ((chan)->key_pressure[key])
+#define fluid_channel_set_key_pressure(chan, key, val) \
+  ((chan)->key_pressure[key] = (val))
 #define fluid_channel_set_tuning(_c, _t)        { (_c)->tuning = _t; }
 #define fluid_channel_has_tuning(_c)            ((_c)->tuning != NULL)
 #define fluid_channel_get_tuning(_c)            ((_c)->tuning)
@@ -103,5 +107,8 @@ int fluid_channel_get_interp_method(fluid_channel_t* chan);
 #define fluid_channel_set_gen(_c, _n, _v, _a)   { (_c)->gen[_n] = _v; (_c)->gen_abs[_n] = _a; }
 #define fluid_channel_get_gen(_c, _n)           ((_c)->gen[_n])
 #define fluid_channel_get_gen_abs(_c, _n)       ((_c)->gen_abs[_n])
+
+#define fluid_channel_get_min_note_length_ticks(chan) \
+  ((chan)->synth->min_note_length_ticks)
 
 #endif /* _FLUID_CHAN_H */

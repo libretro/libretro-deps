@@ -44,7 +44,7 @@ new_fluid_channel(fluid_synth_t* synth, int num)
   chan->preset = NULL;
 
   fluid_channel_init(chan);
-  fluid_channel_init_ctrl(chan);
+  fluid_channel_init_ctrl(chan,0);
 
   return chan;
 }
@@ -65,48 +65,92 @@ fluid_channel_init(fluid_channel_t* chan)
   chan->nrpn_active = 0;
 }
 
+/*
+  @param is_all_ctrl_off if nonzero, only resets some controllers, according to
+  http://www.midi.org/techspecs/rp15.php
+*/
 void
-fluid_channel_init_ctrl(fluid_channel_t* chan)
+fluid_channel_init_ctrl(fluid_channel_t* chan, int is_all_ctrl_off)
 {
   int i;
 
-  chan->key_pressure = 0;
   chan->channel_pressure = 0;
   chan->pitch_bend = 0x2000; /* Range is 0x4000, pitch bend wheel starts in centered position */
-  chan->pitch_wheel_sensitivity = 2; /* two semi-tones */
-  chan->bank_msb = 0;
 
   for (i = 0; i < GEN_LAST; i++) {
     chan->gen[i] = 0.0f;
     chan->gen_abs[i] = 0;
   }
 
-  for (i = 0; i < 128; i++) {
-    SETCC(chan, i, 0);
+  if (is_all_ctrl_off) {
+    for (i = 0; i < ALL_SOUND_OFF; i++) {
+      if (i >= EFFECTS_DEPTH1 && i <= EFFECTS_DEPTH5) {
+        continue;
+      }
+      if (i >= SOUND_CTRL1 && i <= SOUND_CTRL10) {
+        continue;
+      }
+      if (i == BANK_SELECT_MSB || i == BANK_SELECT_LSB || i == VOLUME_MSB ||
+          i == VOLUME_LSB || i == PAN_MSB || i == PAN_LSB) {
+        continue;
+      }
+
+      SETCC(chan, i, 0);
+    }
+  }
+  else {
+    for (i = 0; i < 128; i++) {
+      SETCC(chan, i, 0);
+    }
   }
 
-  /* Volume / initial attenuation (MSB & LSB) */
-  SETCC(chan, VOLUME_MSB, 127);
-  SETCC(chan, VOLUME_LSB, 0);
+  /* Reset polyphonic key pressure on all voices */
+  for (i = 0; i < 128; i++) {
+    fluid_channel_set_key_pressure(chan, i, 0);
+  }
 
-  /* Pan (MSB & LSB) */
-  SETCC(chan, PAN_MSB, 64);
-  SETCC(chan, PAN_LSB, 0);
+  /* Set RPN controllers to NULL state */
+  SETCC(chan, RPN_LSB, 127);
+  SETCC(chan, RPN_MSB, 127);
+
+  /* Set NRPN controllers to NULL state */
+  SETCC(chan, NRPN_LSB, 127);
+  SETCC(chan, NRPN_MSB, 127);
 
   /* Expression (MSB & LSB) */
   SETCC(chan, EXPRESSION_MSB, 127);
   SETCC(chan, EXPRESSION_LSB, 127);
 
-  /* Set RPN controllers to NULL state */
-  SETCC(chan, RPN_LSB, 127);
-  SETCC(chan, RPN_MSB, 127);
+  if (!is_all_ctrl_off) {
+
+    chan->pitch_wheel_sensitivity = 2; /* two semi-tones */
+
+    /* Just like panning, a value of 64 indicates no change for sound ctrls */
+    for (i = SOUND_CTRL1; i <= SOUND_CTRL10; i++) {
+      SETCC(chan, i, 64);
+    }
+
+    /* Volume / initial attenuation (MSB & LSB) */
+    SETCC(chan, VOLUME_MSB, 100);
+    SETCC(chan, VOLUME_LSB, 0);
+
+    /* Pan (MSB & LSB) */
+    SETCC(chan, PAN_MSB, 64);
+    SETCC(chan, PAN_LSB, 0);
+
+    /* Reverb */
+    /* SETCC(chan, EFFECTS_DEPTH1, 40); */
+    /* Note: although XG standard specifies the default amount of reverb to
+       be 40, most people preferred having it at zero.
+       See http://lists.gnu.org/archive/html/fluid-dev/2009-07/msg00016.html */
+  }
 }
 
 void
 fluid_channel_reset(fluid_channel_t* chan)
 {
   fluid_channel_init(chan);
-  fluid_channel_init_ctrl(chan);
+  fluid_channel_init_ctrl(chan,0);
 }
 
 /*
@@ -204,6 +248,10 @@ fluid_channel_cc(fluid_channel_t* chan, int num, int value)
 
   case BANK_SELECT_MSB:
     {
+      if (chan->channum == 9 && fluid_settings_str_equal(chan->synth->settings, "synth.drums-channel.active", "yes")) {
+        return FLUID_OK; /* ignored */
+      }
+
       chan->bank_msb = (unsigned char) (value & 0x7f);
 /*      printf("** bank select msb recieved: %d\n", value); */
 
@@ -221,6 +269,9 @@ fluid_channel_cc(fluid_channel_t* chan, int num, int value)
 
   case BANK_SELECT_LSB:
     {
+      if (chan->channum == 9 && fluid_settings_str_equal(chan->synth->settings, "synth.drums-channel.active", "yes")) {
+        return FLUID_OK; /* ignored */
+      }
       /* FIXME: according to the Downloadable Sounds II specification,
          bit 31 should be set when we receive the message on channel
          10 (drum channel) */
@@ -238,7 +289,7 @@ fluid_channel_cc(fluid_channel_t* chan, int num, int value)
     break;
 
   case ALL_CTRL_OFF:
-    fluid_channel_init_ctrl(chan);
+    fluid_channel_init_ctrl(chan,1);
     fluid_synth_modulate_voices_all(chan->synth, chan->channum);
     break;
 
@@ -268,9 +319,9 @@ fluid_channel_cc(fluid_channel_t* chan, int num, int value)
 	    fluid_channel_pitch_wheel_sens (chan, value);   /* Set bend range in semitones */
 	    /* FIXME - Handle LSB? (Fine bend range in cents) */
 	    break;
-	  case RPN_CHANNEL_FINE_TUNE:   /* Fine tune is 14 bit over 1 semitone (+/- 50 cents, 8192 = center) */
+          case RPN_CHANNEL_FINE_TUNE:   /* Fine tune is 14 bit over +/-1 semitone (+/- 100 cents, 8192 = center) */
 	    fluid_synth_set_gen(chan->synth, chan->channum, GEN_FINETUNE,
-				(data - 8192) / 8192.0 * 50.0);
+                                (data - 8192) / 8192.0 * 100.0);
 	    break;
 	  case RPN_CHANNEL_COARSE_TUNE: /* Coarse tune is 7 bit and in semitones (64 is center) */
 	    fluid_synth_set_gen(chan->synth, chan->channum, GEN_COARSETUNE,

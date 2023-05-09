@@ -110,6 +110,7 @@ FLUIDSYNTH_API int fluid_synth_get_pitch_wheel_sens(fluid_synth_t* synth, int ch
 FLUIDSYNTH_API int fluid_synth_program_change(fluid_synth_t* synth, int chan, int program);
 
 FLUIDSYNTH_API int fluid_synth_channel_pressure(fluid_synth_t* synth, int chan, int val);
+FLUIDSYNTH_API int fluid_synth_key_pressure(fluid_synth_t* synth, int chan, int key, int val);
 FLUIDSYNTH_API int fluid_synth_sysex(fluid_synth_t *synth, const char *data, int len,
                                      char *response, int *response_len, int *handled, int dryrun);
 
@@ -185,6 +186,16 @@ FLUIDSYNTH_API int fluid_synth_stop(fluid_synth_t* synth, unsigned int id);
    * SoundFont management 
    *
    */
+
+  /** Set an optional function callback each time a preset has finished loading.
+      This can be useful when calling fluid_synth_sfload asynchronously.
+      The function must be formatted like this:
+      void my_callback_function(int bank, int num, char* name)
+
+      \param callback Pointer to the function
+  */
+FLUIDSYNTH_API
+void fluid_synth_set_preset_callback(void* callback);
 
   /** Loads a SoundFont file and creates a new SoundFont. The newly
       loaded SoundFont will be put on top of the SoundFont
@@ -690,10 +701,12 @@ FLUIDSYNTH_API void fluid_synth_get_voicelist(fluid_synth_t* synth,
 					    fluid_voice_t* buf[], int bufsize, int ID);
 
 
-//midi router disabled
-//  /** This is a hack to get command handlers working */
-//FLUIDSYNTH_API void fluid_synth_set_midi_router(fluid_synth_t* synth,
-//					      fluid_midi_router_t* router);
+/* midi router disabled */
+#if 0
+  /** This is a hack to get command handlers working */
+FLUIDSYNTH_API void fluid_synth_set_midi_router(fluid_synth_t* synth,
+					      fluid_midi_router_t* router);
+#endif
 
 #ifdef __cplusplus
 }

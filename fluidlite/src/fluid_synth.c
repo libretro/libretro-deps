@@ -127,6 +127,7 @@ void fluid_synth_settings(fluid_settings_t* settings)
   fluid_settings_register_num(settings, "synth.sample-rate",
 			     44100.0f, 22050.0f, 96000.0f,
 			     0, NULL, NULL);
+  fluid_settings_register_int(settings, "synth.min-note-length", 10, 0, 65535, 0, NULL, NULL);
 }
 
 /*
@@ -134,9 +135,9 @@ void fluid_synth_settings(fluid_settings_t* settings)
  */
 void fluid_version(int *major, int *minor, int *micro)
 {
-  *major = FLUIDSYNTH_VERSION_MAJOR;
-  *minor = FLUIDSYNTH_VERSION_MINOR;
-  *micro = FLUIDSYNTH_VERSION_MICRO;
+  *major = FLUIDLITE_VERSION_MAJOR;
+  *minor = FLUIDLITE_VERSION_MINOR;
+  *micro = FLUIDLITE_VERSION_MICRO;
 }
 
 /*
@@ -144,7 +145,7 @@ void fluid_version(int *major, int *minor, int *micro)
  */
 char* fluid_version_str(void)
 {
-  return FLUIDSYNTH_VERSION;
+  return FLUIDLITE_VERSION;
 }
 
 
@@ -368,6 +369,9 @@ new_fluid_synth(fluid_settings_t *settings)
   fluid_settings_getint(settings, "synth.audio-groups", &synth->audio_groups);
   fluid_settings_getint(settings, "synth.effects-channels", &synth->effects_channels);
   fluid_settings_getnum(settings, "synth.gain", &synth->gain);
+  fluid_settings_getint(settings, "synth.min-note-length", &i);
+  synth->min_note_length_ticks = (unsigned int) (i*synth->sample_rate/1000.0f);
+
 
   /* register the callbacks */
   fluid_settings_register_num(settings, "synth.gain",
@@ -727,7 +731,7 @@ delete_fluid_synth(fluid_synth_t* synth)
 /*
  * fluid_synth_error
  *
- * The error messages are not thread-save, yet. They are still stored
+ * The error messages are not thread-safe, yet. They are still stored
  * in a global message buffer (see fluid_sys.c).
  * */
 char*
@@ -743,7 +747,6 @@ int
 fluid_synth_noteon(fluid_synth_t* synth, int chan, int key, int vel)
 {
   fluid_channel_t* channel;
-  int r = FLUID_FAILED;
 
   /* check the ranges of the arguments */
   if ((chan < 0) || (chan >= synth->midi_channels)) {
@@ -1315,6 +1318,49 @@ fluid_synth_channel_pressure(fluid_synth_t* synth, int chan, int val)
 }
 
 /**
+ * Set the MIDI polyphonic key pressure controller value.
+ * @param synth FluidSynth instance
+ * @param chan MIDI channel number (0 to MIDI channel count - 1)
+ * @param key MIDI key number (0-127)
+ * @param val MIDI key pressure value (0-127)
+ * @return FLUID_OK on success, FLUID_FAILED otherwise
+ */
+int
+fluid_synth_key_pressure(fluid_synth_t* synth, int chan, int key, int val)
+{
+  int result = FLUID_OK;
+  if (key < 0 || key > 127) {
+    return FLUID_FAILED;
+  }
+  if (val < 0 || val > 127) {
+    return FLUID_FAILED;
+  }
+
+  if (synth->verbose)
+    FLUID_LOG(FLUID_INFO, "keypressure\t%d\t%d\t%d", chan, key, val);
+
+  fluid_channel_set_key_pressure (synth->channel[chan], key, val);
+
+  // fluid_synth_update_key_pressure_LOCAL
+  {
+    fluid_voice_t* voice;
+    int i;
+
+    for (i = 0; i < synth->polyphony; i++) {
+      voice = synth->voice[i];
+
+      if (voice->chan == chan && voice->key == key) {
+        result = fluid_voice_modulate(voice, 0, FLUID_MOD_KEYPRESSURE);
+        if (result != FLUID_OK)
+          break;
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
  * Set the MIDI pitch bend controller value.
  * @param synth FluidSynth instance
  * @param chan MIDI channel number
@@ -1419,7 +1465,6 @@ fluid_synth_get_preset(fluid_synth_t* synth, unsigned int sfontnum,
 {
   fluid_preset_t* preset = NULL;
   fluid_sfont_t* sfont = NULL;
-  fluid_list_t* list = synth->sfont;
   int offset;
 
   sfont = fluid_synth_get_sfont_by_id(synth, sfontnum);
@@ -1512,7 +1557,13 @@ fluid_synth_program_change(fluid_synth_t* synth, int chan, int prognum)
   if (synth->verbose)
     FLUID_LOG(FLUID_INFO, "prog\t%d\t%d\t%d", chan, banknum, prognum);
 
-  preset = fluid_synth_find_preset(synth, banknum, prognum); //if (channel->channum == 9) fluid_synth_find_preset(synth, DRUM_INST_BANK, prognum);
+  if (channel->channum == 9 && fluid_settings_str_equal(synth->settings, "synth.drums-channel.active", "yes")) {
+    preset = fluid_synth_find_preset(synth, DRUM_INST_BANK, prognum);
+  }
+  else
+  {
+    preset = fluid_synth_find_preset(synth, banknum, prognum);
+  }
 
   /* Fallback to another preset if not found */
   if (!preset)
@@ -1543,7 +1594,7 @@ fluid_synth_program_change(fluid_synth_t* synth, int chan, int prognum)
 
     if (preset)
       FLUID_LOG(FLUID_WARN, "Instrument not found on channel %d [bank=%d prog=%d], substituted [bank=%d prog=%d]",
-		chan, banknum, prognum, subst_bank, subst_prog); 
+		chan, banknum, prognum, subst_bank, subst_prog);
   }
 
   sfont_id = preset? fluid_sfont_get_id(preset->sfont) : 0;
@@ -2390,6 +2441,9 @@ fluid_synth_alloc_voice(fluid_synth_t* synth, fluid_sample_t* sample, int chan, 
 
   if (chan >= 0) {
 	  channel = synth->channel[chan];
+  } else {
+    FLUID_LOG(FLUID_WARN, "Channel should be valid");
+    return NULL;
   }
 
   if (fluid_voice_init(voice, sample, channel, key, vel,
@@ -2473,7 +2527,7 @@ void fluid_synth_kill_by_exclusive_class(fluid_synth_t* synth, fluid_voice_t* ne
 
     fluid_voice_kill_excl(existing_voice);
   };
-};
+}
 
 /*
  * fluid_synth_start_voice
@@ -2524,14 +2578,12 @@ fluid_synth_sfload(fluid_synth_t* synth, const char* filename, int reset_presets
   for (list = synth->loaders; list; list = fluid_list_next(list)) {
     loader = (fluid_sfloader_t*) fluid_list_get(list);
 
-    sfont = FLUID_NEW(fluid_sfont_t);
+    sfont = fluid_sfloader_load(loader, filename);
+    if (sfont == NULL)
+        return -1;
+
     sfont->id = ++synth->sfont_id;
     synth->sfont = fluid_list_prepend(synth->sfont, sfont);
-
-    loader->data = sfont;
-    fluid_sfloader_load(loader, filename);
-    loader->data = NULL;
-
 
     if (reset_presets) {
         fluid_synth_program_reset(synth);
@@ -2899,7 +2951,7 @@ int fluid_synth_set_interp_method(fluid_synth_t* synth, int chan, int interp_met
     };
   };
   return FLUID_OK;
-};
+}
 
 /* Purpose:
  * Returns the number of allocated midi channels
@@ -3061,7 +3113,7 @@ fluid_synth_activate_octave_tuning(fluid_synth_t* synth, int bank, int prog,
 int fluid_synth_tune_notes(fluid_synth_t* synth, int bank, int prog,
 			  int len, int *key, double* pitch, int apply)
 {
-    fluid_tuning_t* old_tuning, *new_tuning;
+    fluid_tuning_t* tuning;
     int i;
 
     if(!(synth != NULL)) return FLUID_FAILED; //fluid_return_val_if_fail
@@ -3071,18 +3123,17 @@ int fluid_synth_tune_notes(fluid_synth_t* synth, int bank, int prog,
     if(!(key != NULL)) return FLUID_FAILED; //fluid_return_val_if_fail
     if(!(pitch != NULL)) return FLUID_FAILED; //fluid_return_val_if_fail
 
-    old_tuning = fluid_synth_get_tuning (synth, bank, prog);
+    tuning = fluid_synth_get_tuning (synth, bank, prog);
 
-    if (old_tuning)
-      new_tuning = fluid_tuning_duplicate(old_tuning);
-    else new_tuning = new_fluid_tuning ("Unnamed", bank, prog);
+    if(!tuning)
+        tuning = new_fluid_tuning ("Unnamed", bank, prog);
 
-    if (new_tuning == NULL) {
+    if (tuning == NULL) {
         return FLUID_FAILED;
     }
 
     for (i = 0; i < len; i++) {
-        fluid_tuning_set_pitch(new_tuning, key[i], pitch[i]);
+        fluid_tuning_set_pitch(tuning, key[i], pitch[i]);
     }
 
   return FLUID_OK;
@@ -3185,6 +3236,36 @@ int fluid_synth_tuning_iteration_next(fluid_synth_t* synth, int* bank, int* prog
 
   return 0;
 }
+
+//workaround for snprint on MSVC <2015 from http://stackoverflow.com/questions/2915672/snprintf-and-visual-studio-2010
+#if defined(_MSC_VER) && _MSC_VER < 1900
+#define snprintf c99_snprintf
+#define vsnprintf c99_vsnprintf
+
+__inline int c99_vsnprintf(char *outBuf, size_t size, const char *format, va_list ap)
+{
+    int count = -1;
+
+    if (size != 0)
+        count = _vsnprintf_s(outBuf, size, _TRUNCATE, format, ap);
+    if (count == -1)
+        count = _vscprintf(format, ap);
+
+    return count;
+}
+
+__inline int c99_snprintf(char *outBuf, size_t size, const char *format, ...)
+{
+    int count;
+    va_list ap;
+
+    va_start(ap, format);
+    count = c99_vsnprintf(outBuf, size, format, ap);
+    va_end(ap);
+
+    return count;
+}
+#endif
 
 int fluid_synth_tuning_dump(fluid_synth_t* synth, int bank, int prog,
 			   char* name, int len, double* pitch)
