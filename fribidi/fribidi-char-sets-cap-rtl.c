@@ -27,7 +27,7 @@
  * For licensing issues, contact <fribidi.license@gmail.com>.
  */
 
-#include <common.h>
+#include "common.h"
 
 #include <fribidi-char-sets-cap-rtl.h>
 
