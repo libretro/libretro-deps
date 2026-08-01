@@ -22,7 +22,7 @@
 #endif
 
 #include <stdio.h>
-#include <compat/zlib.h>
+#include <zlib.h>
 #ifdef STDC
 #  include <string.h>
 #  include <stdlib.h>
@@ -105,7 +105,9 @@
    termination of the result -- however this is only used in gzlib.c where
    the result is assured to fit in the space provided */
 #ifdef _MSC_VER
-#  define snprintf _snprintf
+#ifndef snprintf
+#define snprintf _snprintf
+#endif
 #endif
 
 #ifndef local
