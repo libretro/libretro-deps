@@ -221,7 +221,15 @@ extern void*  _af_debug_hints;
   (*AF_WritingSystem_InitHintsFunc)( AF_GlyphHints    hints,
                                      AF_StyleMetrics  metrics );
 
-  typedef void
+  /* All four implementations assigned to this pointer                     */
+  /* (af_latin_hints_apply, af_cjk_hints_apply, af_indic_hints_apply and    */
+  /* af_dummy_hints_apply) are declared `static FT_Error' and force-cast    */
+  /* at assignment; see each AF_DEFINE_WRITING_SYSTEM_CLASS block.  Native  */
+  /* ABIs tolerate a caller ignoring a returned value, but WebAssembly's    */
+  /* `call_indirect' checks the signature and traps.  The sole call site,   */
+  /* in afloader.c, already discards the result as a bare statement, so     */
+  /* declaring the real return type changes no behaviour.                   */
+  typedef FT_Error
   (*AF_WritingSystem_ApplyHintsFunc)( FT_UInt          glyph_index,
                                       AF_GlyphHints    hints,
                                       FT_Outline*      outline,
